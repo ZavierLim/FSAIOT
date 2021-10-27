@@ -9,9 +9,16 @@ const pool = createPool({
   connectionLimit: 10,
 });
 
-pool.query("select * from user", (err, result, fields) => {
+pool.query("select * from contractors", (err, result, fields) => {
   if (err) {
     return console.log(err);
   }
   return console.log(result);
 });
+
+pool.getConnection((err) => {
+  if (!err) console.log("DB Connection succeded");
+  else console.log(err);
+});
+
+module.exports = "database";

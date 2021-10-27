@@ -26,4 +26,7 @@ CREATE TABLE IF NOT EXISTS `fsa`.`AccessHistory`(
     FOREIGN KEY(`RequestId`)
 		REFERENCES requests(RequestId)
     ON UPDATE CASCADE
-)
+);
+
+INSERT INTO contractors (name,company,phonenumber)VALUES("zavier","IOT","97301682");
+INSERT INTO contractors (name,company,phonenumber)VALUES("Xue Sheng","IOT","91234");
