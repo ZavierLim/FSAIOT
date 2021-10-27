@@ -1,3 +1,5 @@
+CREATE DATABASE IF NOT EXISTS fsa;
+
 CREATE TABLE IF NOT EXISTS `fsa`.`contractors`(
 	`ContractorId` INT NOT NULL AUTO_INCREMENT,
     `Name` varchar(45) NOT NULL,
