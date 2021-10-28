@@ -1,5 +1,6 @@
 const router = require("express").Router();
-const database = require("../database");
+const database = require("../../database");
+const Contractor = require("../../model/contractor");
 
 router.get("/all", async (req, res) => {
   let sql = "SELECT * FROM contractors";
@@ -10,5 +11,8 @@ router.get("/all", async (req, res) => {
 
   res.send(tolog);
 });
+
+//route to CRUD users into FR device
+//router.post
 
 module.exports = router;

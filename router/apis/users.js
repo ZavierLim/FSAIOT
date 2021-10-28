@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const database = require("../database");
+const database = require("../../database");
 
 router.get("/login", (req, res) => res.send("login"));
 
