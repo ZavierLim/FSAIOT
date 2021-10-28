@@ -1,11 +1,11 @@
 const { createPool } = require("mysql2");
 
 const pool = createPool({
-  host: "localhost",
+  host: "fsaiot.cyx3oieygt7p.ap-southeast-1.rds.amazonaws.com",
   port: "3306",
-  user: "root",
-  password: "Password1@",
-  database: "FSA",
+  user: "admin",
+  password: "admin123",
+  database: "fsa",
   connectionLimit: 10,
 });
 
