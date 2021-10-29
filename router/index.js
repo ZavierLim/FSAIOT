@@ -9,5 +9,6 @@ router.get("/", async (req, res) => {
 router.use("/users", require("./apis/users"));
 router.use("/request", require("./apis/request"));
 router.use("/contractors", require("./apis/contractors"));
+router.use("/clicksend", require("./apis/clicksend"));
 
 module.exports = router;
