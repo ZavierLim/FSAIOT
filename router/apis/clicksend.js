@@ -1,25 +1,106 @@
 const router = require("express").Router();
-var api = require('../../node_modules/clicksend/api');
-
-
+var api = require('../../node_modules/clicksend/api.js');
+var cron = require("node-cron");
+const {
+  map
+} = require("bluebird");
 
 var smsApi = new api.SMSApi("1413778858@qq.com", "A6C3CF62-8382-0407-9409-DB5B659F98BC");
 
-var q = "test";
+
+var q1 = "BLK";
+var q2 = "OTP";
 var page = 1;
-var limit = 10;
+var limit = 1;
+var messageId;
+var messageDetails;
+var phoneNum;
+var otp;
+var myMap = new Map();
+var smsMessage = new api.SmsMessage();
+var smsCollection = new api.SmsMessageCollection();
 
-smsApi.smsInboundGet(q, page, limit).then(function(response) {
-  console.log(response.body);
-}).catch(function(err){
-  console.error(err.body);
+cron.schedule('*/5 * * * * * ', () => {
+  console.log('running every second 5');
+  smsApi.smsInboundGet(q1, page, limit).then(function (response) {
+    if (response.body.data.data[0].body.startsWith("BLK")) {
+      console.log("Request OTP");
+
+      messageId = response.body.data.data[0].message_id;
+      messageDetails = response.body.data.data[0].body;
+      phoneNum = response.body.data.data[0].from;
+      console.log(phoneNum);
+      smsMessage.source = "sdk";
+      smsMessage.to = response.body.data.data[0].from;
+      otp = getCode();
+      myMap.set(phoneNum, otp);
+      console.log(myMap);
+      smsMessage.body = "Your OTP is " + otp;
+
+      smsCollection.messages = [smsMessage];
+      smsApi.smsSendPost(smsCollection).then(function (response) {
+
+      }).catch(function (err) {
+        console.error(err.body);
+      });
+
+      smsApi.smsInboundReadByMessageIdPut(messageId).then(function (response) {
+
+      }).catch(function (err) {
+        console.error(err.body);
+      });
+    }
+    if (response.body.data.data[0].body.startsWith("OTP")) {
+      console.log("Send OTP");
+
+      var messageNum = response.body.data.data[0].from;
+      var messageOTP = response.body.data.data[0].body.substring(3, 9);
+      console.log(messageOTP);
+
+      messageId = response.body.data.data[0].message_id;
+
+
+      smsApi.smsInboundReadByMessageIdPut(messageId).then(function (response) {
+
+      }).catch(function (err) {
+        console.error(err.body);
+      });
+
+      if (myMap.get(messageNum) == messageOTP) {
+        console.log("OTP successful");
+      } else {
+        console.log("OTP failed")
+      }
+    }
+
+
+  }).catch(function (err) {
+    console.error(err.body);
+  });
+
+});
+
+cron.schedule('0 */10 * * * * ', () => {
+  myMap.clear();
+  console.log("running every minute 10");
 });
 
 
-console.log(smsApi);
-router.get("/reply", async (req, res) => {
-  res.send("test");
 
-});
+
+
+function getRandom(min, max) {
+  return Math.round(Math.random() * (max - min) + min);
+}
+
+function getCode() {
+  let code = '';
+  for (var i = 0; i < 6; i++) {
+    code += String.fromCharCode(getRandom(48, 57));
+  }
+  return code;
+}
+
+
 
 module.exports = router;
