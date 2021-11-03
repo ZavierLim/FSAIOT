@@ -33,3 +33,5 @@ CREATE TABLE IF NOT EXISTS `fsa`.`AccessHistory`(
 use fsa;
 INSERT INTO contractors (name,company,phonenumber)VALUES("zavier","IOT","97301682");
 INSERT INTO contractors (name,company,phonenumber)VALUES("Xue Sheng","IOT","91234");
+INSERT INTO Requests(ContractorId,Timing,Approval) VALUES("2","2021-11-03 11:20:00","0")
+INSERT INTO Requests(ContractorId,Timing,Approval) VALUES("1","2021-11-04 12:20:00","1")
