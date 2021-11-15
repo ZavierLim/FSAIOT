@@ -14,9 +14,9 @@ router.post("/requestaccess", async (req, res) => {
   contractor.phonenumber = req.body.phonenumber;
   contractor.photo = req.body.photo;
 
-  //  let sql = `SELECT * FROM contractors c WHERE c.name="${contractor.name}"`;
+  //1. Check if Table has request
   let sql = `SELECT * FROM contractors c WHERE c.name="${contractor.name}"`;
-  //destructure row packet data and resultsethea.der
+  //destructure row packet data and resultsheader
   const [tolog, _] = await database.execute(sql);
   if (tolog[0] == undefined) {
     res.send(null);
@@ -24,6 +24,7 @@ router.post("/requestaccess", async (req, res) => {
   }
   res.send(tolog); //return the course;
   console.log("ok");
+
   return;
 });
 
