@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const { access } = require("fs");
 const database = require("../../database");
 const AccessHistory = require("../../model/accessHistory");
 
@@ -21,11 +22,16 @@ router.post("/", async (req, res) => {
   const [tolog, _] = await database.execute(sql);
   if (tolog[0] != undefined) {
     //Obtain the request
-    results = tolog[0];
+    results = await tolog[0];
     //Obtain the Request date
     sgdate = await new Date(tolog[0].Timing).toString();
     testing = await new Date(sgdate.toString());
     console.log(testing.getFullYear());
+
+    //save into access history table
+    accesshistory.RequestId = tolog[0].RequestId;
+    let sql2 = `INSERT INTO AccessHistory(RequestId,DateTimeEntered) values(${accesshistory.RequestId},NOW())`;
+    await database.execute(sql2);
     res.send(tolog[0]);
   }
 
