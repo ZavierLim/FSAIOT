@@ -21,18 +21,33 @@ router.post("/", async (req, res) => {
   //destructure row packet data and resultsheader
   const [tolog, _] = await database.execute(sql);
   if (tolog[0] != undefined) {
-    //Obtain the request
+    //1. Obtain the request from request table
     results = await tolog[0];
-    //Obtain the Request date
-    sgdate = await new Date(tolog[0].Timing).toString();
-    testing = await new Date(sgdate.toString());
-    console.log(testing.getFullYear());
+    //2. Obtain the Request date, if the date is the same as today's date , continue
+    sgdate = await new Date(tolog[0].Timing.toString());
+    console.log(sgdate.getDate(), sgdate.getMonth(), sgdate.getFullYear());
+    //3. If statement to check if current date is the same as request date
+    currenttimestamp = new Date(Date.now());
+    console.log(
+      currenttimestamp.getDate(),
+      currenttimestamp.getMonth(),
+      currenttimestamp.getFullYear()
+    );
 
-    //save into access history table
-    accesshistory.RequestId = tolog[0].RequestId;
-    let sql2 = `INSERT INTO AccessHistory(RequestId,DateTimeEntered) values(${accesshistory.RequestId},NOW())`;
-    await database.execute(sql2);
-    res.send(tolog[0]);
+    if (
+      currenttimestamp.getFullYear() === sgdate.getFullYear() &&
+      currenttimestamp.getMonth() === sgdate.getMonth() &&
+      currenttimestamp.getDate() === sgdate.getDate()
+    ) {
+      //save into access history table
+      accesshistory.RequestId = tolog[0].RequestId;
+      let sql2 = `INSERT INTO AccessHistory(RequestId,DateTimeEntered) values(${accesshistory.RequestId},NOW())`;
+      await database.execute(sql2);
+      res.send(tolog[0]);
+      return;
+    }
+
+    res.send("access not granted, the date of request is incorrect");
   }
 
   return;
