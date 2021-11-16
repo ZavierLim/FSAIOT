@@ -23,8 +23,10 @@ router.post("/", async (req, res) => {
   if (tolog[0] != undefined) {
     //1. Obtain the request from request table
     results = await tolog[0];
+    console.log(results);
     //2. Obtain the Request date, if the date is the same as today's date , continue
     sgdate = await new Date(tolog[0].Timing.toString());
+    console.log(sgdate.toString().getMonth());
     console.log(sgdate.getDate(), sgdate.getMonth(), sgdate.getFullYear());
     //3. If statement to check if current date is the same as request date
     currenttimestamp = new Date(Date.now());
