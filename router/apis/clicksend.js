@@ -3,15 +3,13 @@ const database = require("../../database");
 const Contractor = require("../../model/contractor");
 var api = require('../../node_modules/clicksend/api.js');
 var cron = require("node-cron");
+
+
 const {
   map
 } = require("bluebird");
 
 var smsApi = new api.SMSApi("1413778858@qq.com", "A6C3CF62-8382-0407-9409-DB5B659F98BC");
-
-
-// var q1 = "BLK";
-// var q2 = "OTP";
 var page = 1;
 var limit = 1;
 var messageId;
@@ -28,15 +26,16 @@ var smsCollection = new api.SmsMessageCollection();
 cron.schedule('*/5 * * * * * ', () => {
   console.log('running every second 5');
   smsApi.smsInboundGet(page, limit).then(function (response) {
-    // wheather in Request or not
+
     phoneFrom = response.body.data.data[0].from;
 
     // search contractor
     let sql1 = `SELECT * FROM contractors c WHERE c.phonenumber="${phoneFrom}"`;
-    const [tolog1, _] = await database.execute(sql1);
+    var [tolog1, _] = database.execute(sql1);
 
     // if not exist, mark
     if (tolog1[0] == undefined) {
+      console.log("Contractor not exist.");
       messageId = response.body.data.data[0].message_id;
       smsApi.smsInboundReadByMessageIdPut(messageId).then(function (response) {
 
@@ -49,12 +48,15 @@ cron.schedule('*/5 * * * * * ', () => {
     else {
       let sql2 = `SELECT * FROM Requests r INNER JOIN contractors c ON c.ContractorId=r.ContractorId
       WHERE c.phonenumber="${phoneFrom}"`;
-      const [tolog2, _] = await database.execute(sql2);
+      var [tolog2, _] = database.execute(sql2);
+
+      // request not exist
       if (tolog2[0] == undefined) {
+        console.log("Request not exist.");
         // send unauthorized SMS
         smsMessage.source = "sdk";
         smsMessage.to = response.body.data.data[0].from;
-        smsMessage.body = "Request to unlock the door is invcalid";
+        smsMessage.body = "Request to unlock the door is invalid";
 
         smsCollection.messages = [smsMessage];
         smsApi.smsSendPost(smsCollection).then(function (response) {
@@ -70,7 +72,63 @@ cron.schedule('*/5 * * * * * ', () => {
         }).catch(function (err) {
           console.error(err.body);
         });
-      } else {
+      } 
+
+      // request exist
+      else {
+        // request not approved
+        if (tolog2[0].Approval != 1) {
+          console.log("Request is not approved.")
+        
+          // send unauthorized SMS
+          smsMessage.source = "sdk";
+          smsMessage.to = response.body.data.data[0].from;
+          smsMessage.body = "Request to unlock the door is invalid";
+
+          smsCollection.messages = [smsMessage];
+          smsApi.smsSendPost(smsCollection).then(function (response) {
+
+          }).catch(function (err) {
+            console.error(err.body);
+          });
+
+          // mark as read
+          messageId = response.body.data.data[0].message_id;
+          smsApi.smsInboundReadByMessageIdPut(messageId).then(function (response) {
+
+          }).catch(function (err) {
+            console.error(err.body);
+          });
+        }
+
+        // request not the same date
+        else if( true )//date.format(new Date(tolog2[0].Timing),'YYYY-MM-DD') != currentdate)
+        {
+          console.log("Date is wrong.")
+        
+          // send unauthorized SMS
+          smsMessage.source = "sdk";
+          smsMessage.to = response.body.data.data[0].from;
+          smsMessage.body = "Request to unlock the door is invalid";
+
+          smsCollection.messages = [smsMessage];
+          smsApi.smsSendPost(smsCollection).then(function (response) {
+
+          }).catch(function (err) {
+            console.error(err.body);
+          });
+
+          // mark as read
+          messageId = response.body.data.data[0].message_id;
+          smsApi.smsInboundReadByMessageIdPut(messageId).then(function (response) {
+
+          }).catch(function (err) {
+            console.error(err.body);
+          });
+        }
+        else
+        {
+
         if (response.body.data.data[0].body.startsWith("BLK")) {
           console.log("Request OTP");
 
@@ -130,6 +188,7 @@ cron.schedule('*/5 * * * * * ', () => {
             console.log("OTP failed")
           }
         }
+      }
       }
     }
 
