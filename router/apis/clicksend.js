@@ -1,10 +1,12 @@
 const router = require("express").Router();
 const database = require("../../database");
 const Contractor = require("../../model/contractor");
-var api = require("../../node_modules/clicksend/api.js");
+var api = require("../../node_modules/clicksend/api");
 var cron = require("node-cron");
 
-const { map } = require("bluebird");
+const {
+  map
+} = require("bluebird");
 
 var smsApi = new api.SMSApi(
   "1413778858@qq.com",
@@ -80,6 +82,9 @@ cron.schedule("*/5 * * * * * ", () => {
 
         // request exist
         else {
+          sgdate = await new Date(tolog2[0].Timing.toString());
+          currenttimestamp = new Date(Date.now());
+
           // request not approved
           if (tolog2[0].Approval != 1) {
             console.log("Request is not approved.");
@@ -108,8 +113,9 @@ cron.schedule("*/5 * * * * * ", () => {
           }
 
           // request not the same date
-          else if (true) {
-            //date.format(new Date(tolog2[0].Timing),'YYYY-MM-DD') != currentdate)
+          else if (!(currenttimestamp.getFullYear() === sgdate.getFullYear() &&
+              currenttimestamp.getMonth() === sgdate.getMonth() &&
+              currenttimestamp.getDate() === sgdate.getDate())) {
             console.log("Date is wrong.");
 
             // send unauthorized SMS
@@ -203,70 +209,6 @@ cron.schedule("*/5 * * * * * ", () => {
       console.error(err.body);
     });
 });
-
-//   // receive "BLK" SMS
-//   if (response.body.data.data[0].body.startsWith("BLK")) {
-//     console.log("Request OTP");
-
-//     messageId = response.body.data.data[0].message_id;
-//     messageDetails = response.body.data.data[0].body;
-//     phoneNum = response.body.data.data[0].from;
-//     // prepare for sending OTP
-//     smsMessage.source = "sdk";
-//     smsMessage.to = response.body.data.data[0].from;
-
-//     otp = getCode();
-//     otpMap.set(phoneNum, otp);
-//     console.log(otpMap);
-
-//     access = messageDetails.substring(3, )
-//     accessMap.set(phoneNum,access)
-//     console.log(accessMap);
-
-//     smsMessage.body = "Your OTP is " + otp;
-
-//     // send OTP
-//     smsCollection.messages = [smsMessage];
-//     smsApi.smsSendPost(smsCollection).then(function (response) {
-
-//     }).catch(function (err) {
-//       console.error(err.body);
-//     });
-
-//     // mark as read
-//     smsApi.smsInboundReadByMessageIdPut(messageId).then(function (response) {
-
-//     }).catch(function (err) {
-//       console.error(err.body);
-//     });
-//   }
-//   // receive "OTP" SMS
-//   if (response.body.data.data[0].body.startsWith("OTP")) {
-//     console.log("Send OTP");
-
-//     var messageNum = response.body.data.data[0].from;
-//     var messageOTP = response.body.data.data[0].body.substring(3, 9);
-//     console.log(messageOTP);
-
-//     messageId = response.body.data.data[0].message_id;
-
-//     smsApi.smsInboundReadByMessageIdPut(messageId).then(function (response) {
-
-//     }).catch(function (err) {
-//       console.error(err.body);
-//     });
-
-//     // compare OTP
-//     if (otpMap.get(messageNum) == messageOTP) {
-//       console.log("Unlock " + accessMap.get(messageNum));
-//     } else {
-//       console.log("OTP failed")
-//     }
-//   }
-
-// }).catch(function (err) {
-//   console.error(err.body);
-// });
 
 //clear OTP if long time no use
 cron.schedule("0 */10 * * * * ", () => {
