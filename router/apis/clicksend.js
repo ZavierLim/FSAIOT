@@ -6,6 +6,7 @@ var cron = require("node-cron");
 
 const { map } = require("bluebird");
 
+// ClickSend Api
 var smsApi = new api.SMSApi(
   "1413778858@qq.com",
   "A6C3CF62-8382-0407-9409-DB5B659F98BC"
