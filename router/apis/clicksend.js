@@ -4,9 +4,7 @@ const Contractor = require("../../model/contractor");
 var api = require("../../node_modules/clicksend/api");
 var cron = require("node-cron");
 
-const {
-  map
-} = require("bluebird");
+const { map } = require("bluebird");
 
 var smsApi = new api.SMSApi(
   "1413778858@qq.com",
@@ -82,7 +80,7 @@ cron.schedule("*/5 * * * * * ", () => {
 
         // request exist
         else {
-          sgdate = await new Date(tolog2[0].Timing.toString());
+          sgdate = new Date(tolog2[0].Timing.toString());
           currenttimestamp = new Date(Date.now());
 
           // request not approved
@@ -113,9 +111,13 @@ cron.schedule("*/5 * * * * * ", () => {
           }
 
           // request not the same date
-          else if (!(currenttimestamp.getFullYear() === sgdate.getFullYear() &&
+          else if (
+            !(
+              currenttimestamp.getFullYear() === sgdate.getFullYear() &&
               currenttimestamp.getMonth() === sgdate.getMonth() &&
-              currenttimestamp.getDate() === sgdate.getDate())) {
+              currenttimestamp.getDate() === sgdate.getDate()
+            )
+          ) {
             console.log("Date is wrong.");
 
             // send unauthorized SMS

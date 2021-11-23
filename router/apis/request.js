@@ -22,7 +22,7 @@ router.post("/requestaccess", async (req, res) => {
     res.send(null);
     return;
   }
-  res.send(tolog); //return the course;
+  res.send(tolog);
   console.log("ok");
 
   return;
