@@ -8,6 +8,7 @@ const {
   map
 } = require("bluebird");
 
+// ClickSend Api
 var smsApi = new api.SMSApi(
   "1413778858@qq.com",
   "A6C3CF62-8382-0407-9409-DB5B659F98BC"
@@ -82,7 +83,7 @@ cron.schedule("*/5 * * * * * ", () => {
 
         // request exist
         else {
-          sgdate = await new Date(tolog2[0].Timing.toString());
+          sgdate = new Date(tolog2[0].Timing.toString());
           currenttimestamp = new Date(Date.now());
 
           // request not approved
