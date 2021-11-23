@@ -4,7 +4,9 @@ const Contractor = require("../../model/contractor");
 var api = require("../../node_modules/clicksend/api");
 var cron = require("node-cron");
 
-const { map } = require("bluebird");
+const {
+  map
+} = require("bluebird");
 
 // ClickSend Api
 var smsApi = new api.SMSApi(
@@ -23,6 +25,16 @@ var access;
 var accessMap = new Map();
 var smsMessage = new api.SmsMessage();
 var smsCollection = new api.SmsMessageCollection();
+
+//Prep variables for SQL statement
+var currentdate = new Date(Date.now());
+var sqldatebefore = `${currentdate.getFullYear()}-${
+    currentdate.getMonth() + 1
+  }-${currentdate.getDate()}`;
+
+var sqldateafter = `${currentdate.getFullYear()}-${
+    currentdate.getMonth() + 1
+  }-${currentdate.getDate() + 1}`;
 
 cron.schedule("*/5 * * * * * ", () => {
   console.log("running every second 5");
@@ -50,7 +62,7 @@ cron.schedule("*/5 * * * * * ", () => {
       // if exist, search the request
       else {
         let sql2 = `SELECT * FROM Requests r INNER JOIN contractors c ON c.ContractorId=r.ContractorId
-      WHERE c.phonenumber="${phoneFrom}"`;
+      WHERE c.phonenumber="${phoneFrom}" AND r.Timing>"${sqldatebefore}" AND r.Timing<${sqldateafter}`;
         var [tolog2, _] = database.execute(sql2);
 
         // request not exist
@@ -81,45 +93,10 @@ cron.schedule("*/5 * * * * * ", () => {
 
         // request exist
         else {
-          sgdate = new Date(tolog2[0].Timing.toString());
-          currenttimestamp = new Date(Date.now());
 
           // request not approved
           if (tolog2[0].Approval != 1) {
             console.log("Request is not approved.");
-
-            // send unauthorized SMS
-            smsMessage.source = "sdk";
-            smsMessage.to = response.body.data.data[0].from;
-            smsMessage.body = "Request to unlock the door is invalid";
-
-            smsCollection.messages = [smsMessage];
-            smsApi
-              .smsSendPost(smsCollection)
-              .then(function (response) {})
-              .catch(function (err) {
-                console.error(err.body);
-              });
-
-            // mark as read
-            messageId = response.body.data.data[0].message_id;
-            smsApi
-              .smsInboundReadByMessageIdPut(messageId)
-              .then(function (response) {})
-              .catch(function (err) {
-                console.error(err.body);
-              });
-          }
-
-          // request not the same date
-          else if (
-            !(
-              currenttimestamp.getFullYear() === sgdate.getFullYear() &&
-              currenttimestamp.getMonth() === sgdate.getMonth() &&
-              currenttimestamp.getDate() === sgdate.getDate()
-            )
-          ) {
-            console.log("Date is wrong.");
 
             // send unauthorized SMS
             smsMessage.source = "sdk";
@@ -199,6 +176,9 @@ cron.schedule("*/5 * * * * * ", () => {
 
               // compare OTP
               if (otpMap.get(messageNum) == messageOTP) {
+                // change SMSApproval value
+                let sql3 = `UPDATE Requests r INNER JOIN contractors c ON c.ContractorId=r.ContractorId SET SMSApproval=1 WHERE c.phonenumber="${phoneFrom}" AND r.Timing>"${sqldatebefore}" AND r.Timing<${sqldateafter}`
+                database.execute(sql3);
                 console.log("Unlock " + accessMap.get(messageNum));
               } else {
                 console.log("OTP failed");
