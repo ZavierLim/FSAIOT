@@ -1,6 +1,5 @@
 const router = require("express").Router();
 const database = require("../../database");
-const Contractor = require("../../model/contractor");
 var api = require("../../node_modules/clicksend/api");
 var cron = require("node-cron");
 
@@ -15,6 +14,7 @@ var smsApi = new api.SMSApi(
 );
 var page = 1;
 var limit = 1;
+var q = "q_example";
 var messageId;
 var messageDetails;
 var phoneNum;
@@ -39,14 +39,15 @@ var sqldateafter = `${currentdate.getFullYear()}-${
 cron.schedule("*/5 * * * * * ", () => {
   console.log("running every second 5");
   smsApi
-    .smsInboundGet(page, limit)
-    .then(function (response) {
-      phoneFrom = response.body.data.data[0].from;
+    .smsInboundGet(q, page, limit)
+    .then(async function (response) {
+      console.log(response.body.data.data[0].body);
+      phoneFrom = response.body.data.data[0].from.substring(3, 11);
+      console.log(phoneFrom);
 
       // search contractor
-      let sql1 = `SELECT * FROM contractors c WHERE c.phonenumber="${phoneFrom}"`;
-      var [tolog1, _] = database.execute(sql1);
-
+      let sql1 = `SELECT * FROM contractors c WHERE c.phonenumber=${phoneFrom}`;
+      var [tolog1] = await database.execute(sql1);
       // if not exist, mark
       if (tolog1[0] == undefined) {
         console.log("Contractor not exist.");
@@ -61,9 +62,9 @@ cron.schedule("*/5 * * * * * ", () => {
 
       // if exist, search the request
       else {
-        let sql2 = `SELECT * FROM Requests r INNER JOIN contractors c ON c.ContractorId=r.ContractorId
-      WHERE c.phonenumber="${phoneFrom}" AND r.Timing>"${sqldatebefore}" AND r.Timing<"${sqldateafter}"`;
-        var [tolog2, _] = database.execute(sql2);
+        let sql2 = `SELECT * FROM Requests r INNER JOIN contractors c ON c.ContractorId=r.ContractorId 
+        WHERE c.phonenumber="${phoneFrom}" AND r.Timing>"${sqldatebefore}" AND r.Timing<"${sqldateafter}"`;
+        var [tolog2, _] = await database.execute(sql2);
 
         // request not exist
         if (tolog2[0] == undefined) {
@@ -179,7 +180,7 @@ cron.schedule("*/5 * * * * * ", () => {
                 // change SMSApproval value
                 let sql3 = `UPDATE Requests r SET SMSApproval = 1 WHERE r.Timing>"${sqldatebefore}" 
                 AND r.Timing<"${sqldateafter}" AND  ContractorId = (SELECT ContractorId FROM contractors WHERE PhoneNumber = "${phoneFrom}")`
-                database.execute(sql3);
+                await database.execute(sql3);
                 console.log("Unlock " + accessMap.get(messageNum));
               } else {
                 console.log("OTP failed");
