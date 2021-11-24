@@ -1,17 +1,15 @@
-<form action="/contractors/register" method="POST">
+<form action="/request/requestaccess" method="POST">
   <div class="container">
-    <h1>Register Contractor</h1>
-    <p>Please fill in this form below to register a Contractor.</p>
+    <h1>Register Request</h1>
+    <p>Please fill in this form below to register Access Request.</p>
     <hr>
 
     <label for="name"><b>Name</b></label>
-    <input type="text" placeholder="Enter name" name="name" id="name" required>
+    <input type="text" placeholder="Name is similar to what is registered in FR" name="name" id="name" required>
 
-    <label for="company"><b>Company</b></label>
-    <input type="text" placeholder="Enter company" name="company" id="company" required>
+    <label for="timing"><b>Timing</b></label>
+    <input type="text" placeholder="Enter Timing" name="timing" id="timing" required>
 
-    <label for="phone"><b>Phone Number</b></label>
-    <input type="text" placeholder="Enter Phone Number" name="phone" id="phone" required>
     <hr>
     <button type="submit" class="registerbtn">Register</button>
   </div>
