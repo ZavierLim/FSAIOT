@@ -62,7 +62,7 @@ cron.schedule("*/5 * * * * * ", () => {
       // if exist, search the request
       else {
         let sql2 = `SELECT * FROM Requests r INNER JOIN contractors c ON c.ContractorId=r.ContractorId
-      WHERE c.phonenumber="${phoneFrom}" AND r.Timing>"${sqldatebefore}" AND r.Timing<${sqldateafter}`;
+      WHERE c.phonenumber="${phoneFrom}" AND r.Timing>"${sqldatebefore}" AND r.Timing<"${sqldateafter}"`;
         var [tolog2, _] = database.execute(sql2);
 
         // request not exist
@@ -177,7 +177,8 @@ cron.schedule("*/5 * * * * * ", () => {
               // compare OTP
               if (otpMap.get(messageNum) == messageOTP) {
                 // change SMSApproval value
-                let sql3 = `UPDATE Requests r INNER JOIN contractors c ON c.ContractorId=r.ContractorId SET SMSApproval=1 WHERE c.phonenumber="${phoneFrom}" AND r.Timing>"${sqldatebefore}" AND r.Timing<${sqldateafter}`
+                let sql3 = `UPDATE Requests r SET SMSApproval = 1 WHERE r.Timing>"${sqldatebefore}" 
+                AND r.Timing<"${sqldateafter}" AND  ContractorId = (SELECT ContractorId FROM contractors WHERE PhoneNumber = "${phoneFrom}")`
                 database.execute(sql3);
                 console.log("Unlock " + accessMap.get(messageNum));
               } else {
