@@ -181,6 +181,20 @@ cron.schedule("*/5 * * * * * ", () => {
                 let sql3 = `UPDATE Requests r SET SMSApproval = 1 WHERE r.Timing>"${sqldatebefore}" 
                 AND r.Timing<"${sqldateafter}" AND  ContractorId = (SELECT ContractorId FROM contractors WHERE PhoneNumber = "${phoneFrom}")`
                 await database.execute(sql3);
+                // prepare for sending OTP
+                smsMessage.source = "sdk";
+                smsMessage.to = response.body.data.data[0].from;
+
+                smsMessage.body = "Authentication successful!";
+
+                // send OTP
+                smsCollection.messages = [smsMessage];
+                smsApi
+                  .smsSendPost(smsCollection)
+                  .then(function (response) {})
+                  .catch(function (err) {
+                    console.error(err.body);
+                  });
                 console.log("Unlock " + accessMap.get(messageNum));
               } else {
                 console.log("OTP failed");
