@@ -25,7 +25,7 @@ router.post("/", async (req, res) => {
 
   //1. Check if Table has request
   let sql = `SELECT * FROM Requests r INNER JOIN contractors c ON c.ContractorId=r.ContractorId
-            WHERE c.name="${req.body.name}" AND r.Approval=1 AND r.Timing>"${sqldatebefore}" AND r.Timing<"${sqldateafter}"`;
+            WHERE c.name="${req.body.name}" AND r.Approval=1 AND r.SMSApproval=1 AND r.Timing>"${sqldatebefore}" AND r.Timing<"${sqldateafter}"`;
 
   //destructure row packet data and resultsheader
   const [tolog, _] = await database.execute(sql);
@@ -46,7 +46,7 @@ router.post("/", async (req, res) => {
     res.send("Access Granted");
     return;
   }
-  res.send("access not granted, the date of request is incorrect");
+  res.send("Access Not Granted");
   return;
 });
 

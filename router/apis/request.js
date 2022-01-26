@@ -44,16 +44,18 @@ router.get("/approve", async (req, res) => {
     console.log(results);
     res.render("approverequest.hbs", { results });
   }
+  res.render("approverequest.hbs");
 });
 
+//only the requestId of approved is submitted
 router.post("/approve", async (req, res) => {
-  console.log(req.body.approval); //12
-
+  //If one element, update once
   if (!isNaN(req.body.approval)) {
     let sql = `UPDATE Requests r SET r.approval = "1" WHERE RequestId = ${req.body.approval}`;
     await database.execute(sql);
     res.send("registed 1 number");
     return;
+    //if more than one element, loop through array
   } else if (req.body.approval.length > 1) {
     for (i = 0; i < req.body.approval.length; i++) {
       let sql = `UPDATE Requests r SET r.approval 
